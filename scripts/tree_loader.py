@@ -20,7 +20,12 @@ alignment_infile = f"{BASE_PATH}/{partition_number}/alignments/{cluster_name}.fa
 table_infile = f"{BASE_PATH}/{partition_number}/tables/{cluster_name}.tsv"
 
 ### TREE WORKOUT ###
-from ete3 import PhyloTree
-tree = PhyloTree(tree_infile, alignment=alignment_infile, alg_format="fasta")
+with open(alignment_infile, "r") as alignment_file:
+    alignment_info = alignment_file.read()
 
+# with open(table_infile, "r") as table_file:
+#     table_info = table_file.read()
+
+# from ete3 import PhyloTree
+# tree = PhyloTree(tree_infile, alignment=alignment_info, alg_format="fasta")
 # print (tree)
