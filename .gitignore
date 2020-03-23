@@ -1,3 +1,4 @@
 data
 *.sh~
 *.py~
+*.ipynb_checkpoints
