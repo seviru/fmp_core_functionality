@@ -2,3 +2,5 @@ data
 *.sh~
 *.py~
 *.ipynb_checkpoints
+*.alg
+*.json
