@@ -64,4 +64,6 @@ def retrieve_features (feature_tag, table_file, evalue_threshold, uniprot_info):
     leaf_deleting_list = set(leaf_deleting_list) - set(leaf_saving_list)
 
     return uniprot_hit_hash, leaf_deleting_list
+
+    
 ## END

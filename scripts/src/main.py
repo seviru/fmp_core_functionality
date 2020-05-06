@@ -68,4 +68,9 @@ def calculate_node_score (node, position_matrix, calculus_algorithm, ignore_gaps
     return score
 
 
+
+
+
+
+
 ## END
