@@ -4,6 +4,9 @@ input values by the user, as well as different intermediate useful information.
 """
 
 import src.scoring_functions as sf
+import json
+import re
+from ete3 import PhyloTree, TreeStyle, SeqMotifFace, TextFace
 
 def get_alignment_position (sequence_position, sequence):
     """Transforms a given sequence position into the real alignment
@@ -69,6 +72,70 @@ def calculate_node_score (node, position_matrix, calculus_algorithm, ignore_gaps
 
 
 
+### MAIN 
+
+tree_path = #IMPORTAR UN ARGUMENTO
+alignment_path = #IMPORTAR OTRO ARGUMENTO
+table_path = #IMPORTAR OTRO ARGUMENTO
+uniprot_path = #IMPORTAR OTRO ARGUMENTO
+
+try:
+    with open(table_path, "r") as table_file:
+        table_info = table_file.readlines()
+    table_file.close()
+except:
+    print ("No table path.")
+        
+try:
+    with open(alignment_path, "r") as alignment_file:
+        alignment_info = alignment_file.read()
+    alignment_file.close()
+except:     
+    print ("No alignment path.")
+
+uniprot_info = {}
+with open(uniprot_path, "r") as uniprot_file:
+    for line in uniprot_file:
+        uniprot_entry = json.loads(line)
+        uniprot_info.update(uniprot_entry)
+    uniprot_file.close
+
+
+### AQUI ABAJO, "BINDING" Y EL VALOR DE EVALUE DEBERIAN SER ARGUMENTOS TRAIDOS
+### IF FEATURE = ALL, PENSAR LO QUE QUEREMOS HACER
+uniprot_hit_hash, leaf_delete_list = retrieve_features("BINDING", table_info, 1e-100)
+tree = PhyloTree(tree_path, alignment=alignment_info, alg_format="fasta")
+md = tree.get_midpoint_outgroup()
+tree.set_outgroup(md)
+position_matrix = get_positions_matrix(uniprot_hit_hash, tree)
+ts = TreeStyle()
+ts.layout_fn = lambda x: True
+
+node_number = 0
+node_scores = {}
+
+for leaf in tree.iter_leaves():
+    if leaf.name in leaf_delete_list:
+        leaf.delete()
+        
+for node in tree.traverse():
+    if node.is_leaf() == True:
+        draw_position = 0
+        for position in position_matrix:
+            seqFace = SeqMotifFace(node.sequence[position], seq_format="seq")
+            (tree&node.name).add_face(seqFace, draw_position, "aligned")
+            draw_position += 1  
+    else:
+        node_score = round(calculate_node_score(node, position_matrix, "simple"), 2) ###AQUI EL ALGORITMO DEBERIA VENIR DE UN ARGUMENTO?
+        node.add_feature("node_score", node_score)
+        node_scores[node_number] = node_score
+        node_number += 1
+        if node_score > 0:
+            score_face = TextFace(node.node_score)
+            node.add_face(score_face, 0, "branch-top")
+        
+### AQUI ABAJO EL ARCHIVODE SALIDA DEBERIA VENIR DE LA LINEA DE ARGUMENTOS
+tree.render("mytree_deleted.png", w=800, h=2000, units="px", tree_style=ts)
 
 
 
