@@ -97,15 +97,13 @@ class FeatureStudy:
                 node_number += 1
         self.processed_tree = tree
         self.processed_tree__position_matrix = position_matrix
+
         return node_scores
 
 
     def design_tree(self, node_scores="CALCULATE", plot_threshold=0):
         if node_scores == "CALCULATE":
             self.calculate_nodes()
-            print("calculation complete")
-            print(self.processed_tree)
-            print("processed tree printed")
         else: # DUDAS EN ESTA OPCION
             tree = PhyloTree(self.tree_in, alignment=self.align_in, alg_format="fasta")
             node_number = 0
@@ -137,4 +135,4 @@ class FeatureStudy:
         if tree == "DESIGN":
             self.design_tree()
             tree = self.processed_tree
-        tree.render(self.tree_out, width, heigth, units, tree_style=ts)
+        tree.render(self.tree_out, w=width, h=heigth, units=units, tree_style=ts)
