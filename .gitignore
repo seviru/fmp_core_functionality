@@ -4,3 +4,4 @@ data
 *.ipynb_checkpoints
 *.alg
 *.json
+*/__pycache__
