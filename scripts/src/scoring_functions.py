@@ -79,7 +79,7 @@ def all_vs_all_calculus (first_branch_matrix, second_branch_matrix):
     aminoacid_matrix = []
     score = 0
     leaf_number = len(first_branch_matrix[0]) + len(second_branch_matrix[0])
-    for position, item in enumerate(first_branch_matrix):
+    for position in range(len(first_branch_matrix)):
         aminoacid_matrix.append(first_branch_matrix[position] + second_branch_matrix[position])
     for position_aminoacids in aminoacid_matrix:
         for aa1, aa2 in itertools.combinations(position_aminoacids, 2):
@@ -117,7 +117,7 @@ def all_vs_all_calculus_means (first_branch_matrix, second_branch_matrix):
     branch, giving a mean value for diversity. Sensitive to node size. score=[0-1] (0 being equal nodes).
     """
     position_means = []
-    for position, item in enumerate(first_branch_matrix):
+    for position in range(len(first_branch_matrix)):
         position_aminoacids = first_branch_matrix[position] + second_branch_matrix[position]        
         position_comparison = []
         for aa1, aa2 in itertools.combinations(position_aminoacids, 2):
