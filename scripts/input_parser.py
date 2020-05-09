@@ -24,7 +24,8 @@ outfile_args.add_argument("-o", "--tree_outfile", type=str, default="tree_image.
                           and the node scores.")
 outfile_args.add_argument("-n", "--node_score_table", type=str, default="node_score.tsv",
                     help="File where we will store the node scores for our tree.")
-parameter_args.add_argument("-c", "--calculus_algorithm", type=str, default="simple",
+parameter_args.add_argument("-c", "--calculus_algorithm", type=str, default="simple", 
+                    choices=["simple", "all_vs_all", "whole_annotation_simple", "whole_annotation_all_vs_all", "all_vs_all_means", "whole_annotation_all_vs_all_means"]
                     help="Select which calculation algorithm you want to utilize to calculate the node scores in your tree.")
 parameter_args.add_argument("-g", "--ignore_gap_positions", type=str, default="N", choices=["Y", "N"],
                     help="Decide if you want your calculus algorithm to ignore positions with gaps. At the moment, only 'simple'\
@@ -33,6 +34,8 @@ parameter_args.add_argument("-e", "--min_evalue", type=float, default=1e-10,
                     help="Minimum evalue to take into account an uniprot hit.")
 parameter_args.add_argument("-f", "--annotation_feature", type=str, default="ALL",
                     help="Feature for which we want to represent our tree or get the node scores.")
+
+
 
 args = parser.parse_args()
 
