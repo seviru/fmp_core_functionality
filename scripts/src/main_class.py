@@ -5,23 +5,21 @@ to operate via different methods in order to analyze them.
 
 import json
 import sys
+import os.path
 import src.feature_processing as fp
 from ete3 import PhyloTree, TreeStyle, SeqMotifFace, TextFace
 
 class FeatureStudy:
     def __init__(self, tree_path, alignment_path, table_path,
                 uniprot_path, annotation_features, min_evalue, 
-                tree_outfile, node_score_table, node_score_algorithm, 
-                ignore_gap_positions):
+                node_score_algorithm, ignore_gap_positions):
         try:
+            self.align_in = alignment_path
             self.tree_in = tree_path
             self.min_eval = min_evalue
-            self.tree_out = tree_outfile
-            self.score_table = node_score_table
             self.calc_alg = node_score_algorithm
             self.ignore_gaps = ignore_gap_positions
-            self.align_in, self.table_in, self.uniprot_in, self.study_features = self.__setup__(alignment_path, 
-                                                                                table_path, 
+            self.table_in, self.uniprot_in, self.study_features = self.__setup__(table_path, 
                                                                                 uniprot_path, 
                                                                                 annotation_features)
         except:
@@ -29,7 +27,7 @@ class FeatureStudy:
             sys.exit(1)
 
 
-    def __setup__(self, alignment_path, table_path,
+    def __setup__(self, table_path,
                 uniprot_path, annotation_features):
         """Method to check if the infiles exist, to process the features 
         the user want to study, and if the parameter "ignore_gaps" 
@@ -37,12 +35,17 @@ class FeatureStudy:
         """
         try:
             try:
-                with open(alignment_path, "r") as alignment_file:
-                    alignment_info = alignment_file.read()
-                alignment_file.close()
+                os.path.isfile(self.align_in)
             except:
                 print("Alignment file not found.")
                 sys.stderr.write("Alignment file not found.")
+                sys.exit(1)
+            
+            try:
+                os.path.isfile(self.tree_in)
+            except:
+                print("Tree file not found.")
+                sys.stderr.write("Tree file not found.")
                 sys.exit(1)
             
             try:
@@ -68,8 +71,7 @@ class FeatureStudy:
 
             try:
                 all_features = fp.check_features(table_info, self.min_eval, uniprot_info)
-                temporal_features = {}
-                temporal_features = set(temporal_features)
+                temporal_features = set()
                 if "CHAIN" in all_features:
                     all_features.remove("CHAIN")
                 if annotation_features == "ALL":
@@ -78,12 +80,12 @@ class FeatureStudy:
                     if "," in annotation_features:
                         annotation_features = set([feature.upper() for feature in annotation_features.split(",")])
                     else:
-                        annotation_features = set([annotation_features.upper()])
-                    {temporal_features.update([feature]) for feature in annotation_features if feature in all_features}
+                        annotation_features = set([annotation_features.upper()])                    
+                    temporal_features.update(annotation_features & all_features)
                 not_found_annotations = annotation_features - temporal_features
+                annotation_features = temporal_features
                 if len(not_found_annotations) > 0:
                     sys.stderr.write(f"The features {not_found_annotations} were not found for the given parameters.\n")
-                annotation_features = temporal_features
                 if len(annotation_features) == 0:
                     sys.stderr.write("No features found for the given parameters.\n")
                     sys.exit(1)
@@ -99,13 +101,12 @@ class FeatureStudy:
             - STUDY FEATURES: {annotation_features}
             - EVALUE THRESHOLD: {self.min_eval}
             - CALCULUS ALGORITHM: {self.calc_alg}""")
-
-        
+    
         except:
             sys.stderr.write("Error at instance setup.\n")
             sys.exit(1)
                 
-        return alignment_info, table_info, uniprot_info, annotation_features
+        return table_info, uniprot_info, annotation_features
 
 
     def calculate_nodes(self):
@@ -133,11 +134,12 @@ class FeatureStudy:
                     node_number += 1
             self.processed_tree = tree
             self.processed_tree__position_matrix = position_matrix
+            self.node_scores = node_scores
         except:
             sys.stderr.write("Error at calculating nodes.\n")
             sys.exit(1)
 
-        return node_scores
+        return 
 
 
     def design_tree(self, node_scores="CALCULATE", plot_threshold=0):
@@ -173,9 +175,11 @@ class FeatureStudy:
         return
 
 
-    def plot_tree(self, tree="DESIGN", width=800, heigth=2000, units="px", plot_threshold=0): # Units may be “px”: pixels, “mm”: millimeters, “in”: inches
+    def plot_tree(self, outfile, tree="DESIGN", width=800, heigth=2000, units="px", plot_threshold=0):
         """Method to plot a tree to a file given a set of
-        parameters.
+        parameters. Units may be “px”: pixels, “mm”: millimeters, “in”: inches.
+        Plot threshold referes to the minimum score a node must have to plot
+        it in the tree image.
         """
         try:
             ts = TreeStyle()
@@ -183,9 +187,22 @@ class FeatureStudy:
             if tree == "DESIGN":
                 self.design_tree(plot_threshold=plot_threshold)
                 tree = self.processed_tree
-            tree.render(self.tree_out, w=width, h=heigth, units=units, tree_style=ts)
+            tree.render(outfile, w=width, h=heigth, units=units, tree_style=ts)
         except:
             sys.stderr.write("Error at plotting tree.\n")
+            sys.exit(1)
+
+
+    def write_node_file(self, outfile):
+        """Method to write our node score list to a file
+        """
+        try:
+            with open(outfile, 'w') as file:
+                for node in self.node_scores:
+                    file.write(f"{node}\t{self.node_scores[node]}\n")
+                file.close()
+        except:
+            sys.stderr.write("Error at writing nodes to file.\n")
             sys.exit(1)
 
 
