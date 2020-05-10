@@ -92,10 +92,13 @@ def all_vs_all_calculus (first_branch_matrix, second_branch_matrix):
     try:
         aminoacid_matrix = []
         score = 0
-        leaf_number = len(first_branch_matrix[0]) + len(second_branch_matrix[0])
         for position in range(len(first_branch_matrix)):
-            aminoacid_matrix.append(first_branch_matrix[position] + second_branch_matrix[position])
+            if (len(first_branch_matrix[position]) == 0 or len(second_branch_matrix[position]) == 0):
+                continue
+            else:
+                aminoacid_matrix.append(first_branch_matrix[position] + second_branch_matrix[position])
         for position_aminoacids in aminoacid_matrix:
+            leaf_number = len(position_aminoacids)
             for aa1, aa2 in itertools.combinations(position_aminoacids, 2):
                 if aa1 != aa2:
                     score += 1/(fact(leaf_number)/(fact(2)*fact(leaf_number-2)))
@@ -138,15 +141,21 @@ def all_vs_all_calculus_means (first_branch_matrix, second_branch_matrix):
     try:
         position_means = []
         for position in range(len(first_branch_matrix)):
-            position_aminoacids = first_branch_matrix[position] + second_branch_matrix[position]        
-            position_comparison = []
-            for aa1, aa2 in itertools.combinations(position_aminoacids, 2):
-                if aa1 == aa2:
-                    position_comparison.append(0)
-                else:
-                    position_comparison.append(1)
-            position_means.append(sum(position_comparison)/len(position_comparison))
-        score = sum(position_means)/len(position_means)
+            if (len(first_branch_matrix[position]) == 0 or len(second_branch_matrix[position]) == 0):
+                continue
+            else:
+                position_aminoacids = first_branch_matrix[position] + second_branch_matrix[position]        
+                position_comparison = []
+                for aa1, aa2 in itertools.combinations(position_aminoacids, 2):
+                    if aa1 == aa2:
+                        position_comparison.append(0)
+                    else:
+                        position_comparison.append(1)
+                position_means.append(sum(position_comparison)/len(position_comparison))
+        if len(position_means) != 0:
+            score = sum(position_means)/len(position_means)
+        else:
+            score = 0
     except:
         sys.stderr.write("Error at execution of calculus function (scoring_functions.all_vs_all_calculus_means).\n")
         sys.exit(1)

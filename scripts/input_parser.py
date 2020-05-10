@@ -28,9 +28,9 @@ outfile_args.add_argument("-n", "--node_score_table", type=str,
 parameter_args.add_argument("-c", "--calculus_algorithm", type=str, default="simple", 
                     choices=["simple", "all_vs_all", "whole_annotation_simple", "whole_annotation_all_vs_all", "all_vs_all_means", "whole_annotation_all_vs_all_means"],
                     help="Select which calculation algorithm you want to utilize to calculate the node scores in your tree.")
-parameter_args.add_argument("-g", "--ignore_gap_positions", type=str, default="N", choices=["Y", "N"],
-                    help="Decide if you want your calculus algorithm to ignore positions with gaps. At the moment, only 'simple'\
-                          calculus algorithm is capable of doing this.")
+parameter_args.add_argument("-g", "--differentiate_gap_positions", type=str, default="N", choices=["Y", "N"],
+                    help="Decide if you want your calculus algorithm to differentiate gaps from aminoacids.\
+                          Algorithms that accept this parameter = 'Y': 'simple', 'all_vs_all', 'all_vs_all_means'.")
 parameter_args.add_argument("-e", "--min_evalue", type=float, default=1e-10,
                     help="Minimum evalue to take into account an uniprot hit.")
 parameter_args.add_argument("-f", "--annotation_feature", type=str, default="ALL",
@@ -45,7 +45,7 @@ if args.tree_outfile is None and args.node_score_table is None:
 print("Creating study instance...")
 case_study = main.FeatureStudy(args.tree_infile, args.alignment_infile, args.table_infile,
                            args.uniprot_infile, args.annotation_feature, args.min_evalue,
-                           args.calculus_algorithm, args.ignore_gap_positions)
+                           args.calculus_algorithm, args.differentiate_gap_positions)
 
 print("Designing tree.")
 case_study.design_tree()

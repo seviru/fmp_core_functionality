@@ -12,13 +12,13 @@ from ete3 import PhyloTree, TreeStyle, SeqMotifFace, TextFace
 class FeatureStudy:
     def __init__(self, tree_path, alignment_path, table_path,
                 uniprot_path, annotation_features, min_evalue, 
-                node_score_algorithm, ignore_gap_positions):
+                node_score_algorithm, differentiate_gap_positions):
         try:
             self.align_in = alignment_path
             self.tree_in = tree_path
             self.min_eval = min_evalue
             self.calc_alg = node_score_algorithm
-            self.ignore_gaps = ignore_gap_positions
+            self.differentiate_gaps = differentiate_gap_positions
             self.table_in, self.uniprot_in, self.study_features = self.__setup__(table_path, 
                                                                                 uniprot_path, 
                                                                                 annotation_features)
@@ -30,7 +30,7 @@ class FeatureStudy:
     def __setup__(self, table_path,
                 uniprot_path, annotation_features):
         """Method to check if the infiles exist, to process the features 
-        the user want to study, and if the parameter "ignore_gaps" 
+        the user want to study, and if the parameter "" 
         corresponds with an algorithm that can actually handle it.
         """
         try:
@@ -93,9 +93,10 @@ class FeatureStudy:
                 sys.stderr.write("Feature unpacking gone wrong.\n")
                 sys.exit(1)
 
-            if self.calc_alg != "simple" and self.ignore_gaps == "Y":
-                sys.stderr.write("Only calculus algorithm supporting gap differentiation is 'simple'.\n")
+            if self.calc_alg not in {"simple", "all_vs_all", "all_vs_all_means"} and self.differentiate_gaps == "Y":
+                sys.stderr.write("Only calculus algorithm supporting gap differentiation are 'simple', 'all_vs_all', 'all_vs_all_means'.\n")
                 sys.exit(1)
+            
             
             print(f"""Computing tree with the following parameters: 
             - STUDY FEATURES: {annotation_features}
@@ -128,7 +129,7 @@ class FeatureStudy:
                     leaf.delete()
             for node in tree.traverse():
                 if node.is_leaf() == False:
-                    node_score = round(fp.calculate_node_score(node, position_matrix, self.calc_alg, self.ignore_gaps), 2) ###AQUI EL ALGORITMO DEBERIA VENIR DE UN ARGUMENTO?
+                    node_score = round(fp.calculate_node_score(node, position_matrix, self.calc_alg, self.differentiate_gaps), 2) ###AQUI EL ALGORITMO DEBERIA VENIR DE UN ARGUMENTO?
                     node.add_feature("node_score", node_score)
                     node_scores[node_number] = node_score
                     node_number += 1

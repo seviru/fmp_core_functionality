@@ -118,7 +118,7 @@ def get_positions_matrix (feature_hash, tree):
     return position_matrix
 
 
-def calculate_node_score (node, position_matrix, calculus_algorithm, ignore_gaps):
+def calculate_node_score (node, position_matrix, calculus_algorithm, differentiate_gaps):
     """Calculates the node score for a given tree branch, with different
     algorithm variations. If user wants to ignore positions that are gaps,
     the only algorithm that does this at the moment (06/05/2020) is "simple_calculus"
@@ -131,7 +131,7 @@ def calculate_node_score (node, position_matrix, calculus_algorithm, ignore_gaps
             for position in position_matrix:
                 position_aminoacids = []
                 for leaf in branch.iter_leaves():
-                    if (leaf.sequence[position] == "-" and ignore_gaps == True and calculus_algorithm == "simple"):
+                    if (leaf.sequence[position] == "-" and differentiate_gaps == "Y"):
                         continue
                     else:
                         position_aminoacids.append(leaf.sequence[position])
