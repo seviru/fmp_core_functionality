@@ -25,8 +25,7 @@ class FeatureStudy:
                                                                                 uniprot_path, 
                                                                                 annotation_features)
         except:
-            print("Error at instance initialization.")
-            sys.stderr.write("Error at instance initialization.")
+            sys.stderr.write("Error at instance initialization.\n")
             sys.exit(1)
 
 
@@ -76,19 +75,18 @@ class FeatureStudy:
                     annotation_features = set([feature.upper() for feature in annotation_features.split(",")])
                 else:
                     pass
+                print(f"Computing tree for the following annotations: {annotation_features}")
             except:
                 print("Feature unpacking gone wrong.")
                 sys.stderr.write("Feature unpacking gone wrong.")
                 sys.exit(1)
 
             if self.calc_alg != "simple" and self.ignore_gaps == "Y":
-                print("Only calculus algorithm supporting gap differentiation is 'simple'.")
-                sys.stderr.write("Only calculus algorithm supporting gap differentiation is 'simple'.")
+                sys.stderr.write("Only calculus algorithm supporting gap differentiation is 'simple'.\n")
                 sys.exit(1)
         
         except:
-            print("Error at instance setup.")
-            sys.stderr.write("Error at instance setup.")
+            sys.stderr.write("Error at instance setup.\n")
             sys.exit(1)
                 
         return alignment_info, table_info, uniprot_info, annotation_features
@@ -120,8 +118,7 @@ class FeatureStudy:
             self.processed_tree = tree
             self.processed_tree__position_matrix = position_matrix
         except:
-            print("Error at calculating nodes.")
-            sys.stderr.write("Error at calculating nodes.")
+            sys.stderr.write("Error at calculating nodes.\n")
             sys.exit(1)
 
         return node_scores
@@ -154,8 +151,7 @@ class FeatureStudy:
                         score_face = TextFace(node.node_score)
                         node.add_face(score_face, 0, "branch-top")
         except:
-            print("Error at designing tree.")
-            sys.stderr.write("Error at designing tree.")
+            sys.stderr.write("Error at designing tree.\n")
             sys.exit(1)
 
         return
@@ -173,8 +169,8 @@ class FeatureStudy:
                 tree = self.processed_tree
             tree.render(self.tree_out, w=width, h=heigth, units=units, tree_style=ts)
         except:
-            print("Error at plotting tree.")
-            sys.stderr.write("Error at plotting tree.")
+            sys.stderr.write("Error at plotting tree.\n")
             sys.exit(1)
+
 
 ## END
