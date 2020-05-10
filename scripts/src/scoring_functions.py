@@ -5,6 +5,7 @@ given different criteria.
 """
 
 from collections import Counter
+from math import factorial as fact
 import itertools
 import src.utils as utils
 import sys
@@ -86,7 +87,7 @@ def whole_annotation_simple_calculus (first_branch_matrix, second_branch_matrix)
 
 def all_vs_all_calculus (first_branch_matrix, second_branch_matrix):
     """Compares a given position with all the position inside and outside Its
-    branch. Sensitive to node size. score>=0 (0 being equal nodes).
+    branch. Sensitive to node size. score=[0-1] (0 being equal nodes).
     """
     try:
         aminoacid_matrix = []
@@ -97,7 +98,8 @@ def all_vs_all_calculus (first_branch_matrix, second_branch_matrix):
         for position_aminoacids in aminoacid_matrix:
             for aa1, aa2 in itertools.combinations(position_aminoacids, 2):
                 if aa1 != aa2:
-                    score += 1/leaf_number
+                    # score += 1/leaf_number
+                    score += 1/(fact(leaf_number)/(fact(2)*fact(leaf_number-2)))
         score = round(score, 2)
     except:
         sys.stderr.write("Error at execution of calculus function (scoring_functions.all_vs_all_calculus).\n")
@@ -109,7 +111,7 @@ def all_vs_all_calculus (first_branch_matrix, second_branch_matrix):
 def whole_annotation_all_vs_all_calculus (first_branch_matrix, second_branch_matrix):
     """Compares a given position with all the position inside and outside Its
     branch, taking all the positions from the annotation as an only one. 
-    Sensitive to node size. score>=0 (0 being equal nodes).
+    Sensitive to node size. score=[0-1] (0 being equal nodes).
     """
     try:
         merged_matrix = []
@@ -121,7 +123,7 @@ def whole_annotation_all_vs_all_calculus (first_branch_matrix, second_branch_mat
             merged_matrix.append(item + second_branch_matrix[1][position])
         for aa1, aa2 in itertools.combinations(merged_matrix, 2):
             if aa1 != aa2:
-                score += 1/leaf_number 
+                score += 1/(fact(leaf_number)/(fact(2)*fact(leaf_number-2))) 
         score = round(score, 2)
     except:
         sys.stderr.write("Error at execution of calculus function (scoring_functions.whole_annotation_all_vs_all_calculus).\n")
