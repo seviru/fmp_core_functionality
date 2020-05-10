@@ -45,6 +45,7 @@ def retrieve_features (feature_list, table_file, evalue_threshold, uniprot_info)
         uniprot_hit_hash = {}
         leaf_deleting_list = []
         leaf_saving_list = []
+
         for line in table_file:
             hit_type = line.split("\t")[2]
             hit_name = line.split("\t")[3]
@@ -141,6 +142,7 @@ def calculate_node_score (node, position_matrix, calculus_algorithm, ignore_gaps
         second_branch_matrix = branch_matrix[1]
         scorer = sf.get_scorer(calculus_algorithm)
         score = scorer(first_branch_matrix, second_branch_matrix)
+
     except:
         sys.stderr.write("Error at calculating node score (feature_processing.calculate_node_score).\n")
         sys.exit(1)
