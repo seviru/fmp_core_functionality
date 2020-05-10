@@ -67,23 +67,39 @@ class FeatureStudy:
                 sys.exit(1)
 
             try:
+                all_features = fp.check_features(table_info, self.min_eval, uniprot_info)
+                temporal_features = {}
+                temporal_features = set(temporal_features)
+                if "CHAIN" in all_features:
+                    all_features.remove("CHAIN")
                 if annotation_features == "ALL":
-                    annotation_features = fp.check_features(table_info, self.min_eval, uniprot_info)
-                    if "CHAIN" in annotation_features:
-                        annotation_features.remove("CHAIN")
-                elif "," in annotation_features:
-                    annotation_features = set([feature.upper() for feature in annotation_features.split(",")])
+                    annotation_features = all_features
                 else:
-                    pass
-                print(f"Computing tree for the following annotations: {annotation_features}")
+                    if "," in annotation_features:
+                        annotation_features = set([feature.upper() for feature in annotation_features.split(",")])
+                    else:
+                        annotation_features = set([annotation_features.upper()])
+                    {temporal_features.update([feature]) for feature in annotation_features if feature in all_features}
+                not_found_annotations = annotation_features - temporal_features
+                if len(not_found_annotations) > 0:
+                    sys.stderr.write(f"The features {not_found_annotations} were not found for the given parameters.\n")
+                annotation_features = temporal_features
+                if len(annotation_features) == 0:
+                    sys.stderr.write("No features found for the given parameters.\n")
+                    sys.exit(1)
             except:
-                print("Feature unpacking gone wrong.")
-                sys.stderr.write("Feature unpacking gone wrong.")
+                sys.stderr.write("Feature unpacking gone wrong.\n")
                 sys.exit(1)
 
             if self.calc_alg != "simple" and self.ignore_gaps == "Y":
                 sys.stderr.write("Only calculus algorithm supporting gap differentiation is 'simple'.\n")
                 sys.exit(1)
+            
+            print(f"""Computing tree with the following parameters: 
+            - STUDY FEATURES: {annotation_features}
+            - EVALUE THRESHOLD: {self.min_eval}
+            - CALCULUS ALGORITHM: {self.calc_alg}""")
+
         
         except:
             sys.stderr.write("Error at instance setup.\n")
