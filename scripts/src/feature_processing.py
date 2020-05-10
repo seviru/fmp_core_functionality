@@ -142,7 +142,6 @@ def calculate_node_score (node, position_matrix, calculus_algorithm, ignore_gaps
         second_branch_matrix = branch_matrix[1]
         scorer = sf.get_scorer(calculus_algorithm)
         score = scorer(first_branch_matrix, second_branch_matrix)
-
     except:
         sys.stderr.write("Error at calculating node score (feature_processing.calculate_node_score).\n")
         sys.exit(1)
