@@ -4,7 +4,7 @@
 
 ## tree_analyzer.py
 Main algorithm to be called by the user. Depending on which out files he inputs as outfiles, the script will execute different modules, or all of them.
-"""
+```
 python tree_analyzer -h
 usage: tree_analyzer.py [-h] -i TREE_INFILE 
                              -a ALIGNMENT_INFILE 
@@ -80,7 +80,7 @@ SCRIPT PARAMETERS:
   -p PLOT_THRESHOLD, --plot_threshold PLOT_THRESHOLD
                         Minimum value of a node score in order to plot it in
                         our tree image.
-"""
+```
 
 ## src
 Folder containing all the different modules that call each other in order to make tree_analyzer.py work.
