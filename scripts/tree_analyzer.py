@@ -35,6 +35,14 @@ parameter_args.add_argument("-e", "--min_evalue", type=float, default=1e-10,
                     help="Minimum evalue to take into account an uniprot hit.")
 parameter_args.add_argument("-f", "--annotation_feature", type=str, default="ALL",
                     help="Feature for which we want to represent our tree or get the node scores.")
+parameter_args.add_argument("-m", "--tree_height", type=int, default=2000,
+                    help="Height of our tree image output.")
+parameter_args.add_argument("-w", "--tree_width", type=int, default=900,
+                    help="Width of our tree image output.")
+parameter_args.add_argument("-x", "--tree_size_units", type=str, default="px", choices=["px", "mm", "in"],
+                    help="Units in which we measure our tree image size.")
+parameter_args.add_argument("-p", "--plot_threshold", type=float, default=0.0,
+                    help="Minimum value of a node score in order to plot it in our tree image.")
 
 args = parser.parse_args()
 
@@ -48,15 +56,19 @@ case_study = main.FeatureStudy(args.tree_infile, args.alignment_infile, args.tab
                            args.calculus_algorithm, args.differentiate_gap_positions)
 
 print("Designing tree.")
-case_study.design_tree()
+case_study.design_tree(plot_threshold=args.plot_threshold)
 
 if args.tree_outfile is not None:
       print("Plotting tree.")
-      case_study.plot_tree(outfile=f"{args.tree_outfile}.png", tree=case_study.processed_tree)
+      case_study.plot_tree(outfile=f"{args.tree_outfile}.png", 
+                           tree=case_study.processed_tree,
+                           width=args.tree_width, 
+                           heigth=args.tree_height, 
+                           units=args.tree_size_units)
 if args.node_score_table is not None:
       print("Writing nodes to a file.")
       case_study.write_node_file(outfile=args.node_score_table)
 
-print("Study finished.")
+print("Analysis finished.")
 
 ## END
