@@ -83,4 +83,4 @@ SCRIPT PARAMETERS:
 ```
 
 ## src
-Folder containing all the different modules that call each other in order to make tree_analyzer.py work.
+Folder containing all the different modules that call each other in order to make `tree_analyzer.py` work.
