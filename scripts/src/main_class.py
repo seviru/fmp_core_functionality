@@ -82,10 +82,10 @@ class FeatureStudy:
                     else:
                         annotation_features = set([annotation_features.upper()])                    
                     temporal_features.update(annotation_features & all_features)
-                not_found_annotations = annotation_features - temporal_features
-                annotation_features = temporal_features
-                if len(not_found_annotations) > 0:
-                    sys.stderr.write(f"The features {not_found_annotations} were not found for the given parameters.\n")
+                    not_found_annotations = annotation_features - temporal_features
+                    annotation_features = temporal_features
+                    if len(not_found_annotations) > 0:
+                        sys.stderr.write(f"The features {not_found_annotations} were not found for the given parameters.\n")
                 if len(annotation_features) == 0:
                     sys.stderr.write("No features found for the given parameters.\n")
                     sys.exit(1)
