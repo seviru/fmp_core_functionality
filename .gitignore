@@ -1,7 +1,0 @@
-plop
-*.sh~
-*.py~
-*.ipynb_checkpoints
-*.alg
-*.json
-*/__pycache__
