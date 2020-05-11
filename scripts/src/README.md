@@ -27,4 +27,4 @@ File containing functions with flexible utilities, such as:
     of the inputs. The key point here is that returns the key and values pairs without operating with them.
 
 ## main_class.py
-File containing the class FeatureStudy definition, as well as the different methods that call the functions to carry on the analysis. It has a __setup__ method as well that checks that all the needed inputs are correctly given, and that the analysis can actually be carried out.
+File containing the class FeatureStudy definition, as well as the different methods that call the functions to carry on the analysis. It has a `__setup__` method as well that checks that all the needed inputs are correctly given, and that the analysis can actually be carried out.
