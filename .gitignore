@@ -1,0 +1,5 @@
+tree_analyzer/data/*
+__pycache__/
+plop
+.Rhistory
+scripts/presentation
