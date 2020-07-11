@@ -25,7 +25,7 @@ def check_features (table_file, evalue_threshold, uniprot_info):
                 hit_evalue = float(hit_evalue)
             if (hit_type == ("spb" or "spe") and
                 hit_name not in uniprot_hit_set and
-                hit_evalue <= evalue_threshold):
+                (evalue_threshold is None or hit_evalue <= evalue_threshold)):
                 for feature in uniprot_info[hit_name]["FT"]: # TO CHECK FEATURES WHEN WE PICK A NEW FILE MANUALLY
                     if feature["ft"] not in feature_set:
                         feature_set.add(feature["ft"])
