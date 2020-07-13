@@ -104,13 +104,9 @@ class FeatureStudy:
             if self.calc_alg not in {"simple", "all_vs_all", "all_vs_all_means"} and self.differentiate_gaps == "Y":
                 sys.stderr.write("Only calculus algorithm supporting gap differentiation are 'simple', 'all_vs_all', 'all_vs_all_means'.\n")
                 sys.exit(1)
-            
-            
-            print(f"""Computing tree with the following parameters: 
-            - STUDY FEATURES: {annotation_features}
-            - EVALUE THRESHOLD: {self.min_eval}
-            - CALCULUS ALGORITHM: {self.calc_alg}""")
     
+            print("Study instance correctly initiated.\n")
+
         except:
             sys.stderr.write("Error at instance setup.\n")
             sys.exit(1)
@@ -125,6 +121,12 @@ class FeatureStudy:
         of a processed tree.
         """
         try:
+            print(f"""Computing tree with the following parameters: 
+            - STUDY FEATURES: {self.study_features}
+            - EVALUE THRESHOLD: {self.min_eval}
+            - CALCULUS ALGORITHM: {self.calc_alg}
+            - DIFFERENTIATE GAPS: {self.differentiate_gaps}""")
+
             uniprot_hit_hash, leaf_deleting_list = fp.retrieve_features(self.study_features, self.table_info, self.min_eval, self.uniprot_info)
             tree = PhyloTree(self.tree_in, alignment=self.align_in, alg_format="fasta")
             md = tree.get_midpoint_outgroup()
