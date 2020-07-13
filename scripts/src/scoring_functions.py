@@ -79,7 +79,7 @@ def whole_annotation_simple_calculus (first_branch_matrix, second_branch_matrix)
         score += sum( [differences[different_aminoacid] / leaf_number for different_aminoacid in differences ] )
         score = round(score, 2)
     except:
-        sys.stderr.write("Error at execution of calculus function (scoring_functions.whoile_annotation.simple_calculus).\n")
+        sys.stderr.write("Error at execution of calculus function (scoring_functions.whole_annotation.simple_calculus).\n")
         sys.exit(1)
 
     return score
