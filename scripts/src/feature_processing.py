@@ -10,10 +10,8 @@ def check_features (table_file, evalue_threshold, uniprot_info):
     and within the evalue threshold.
     """
     try:
-        uniprot_hit_set = {}
-        feature_set = {}
-        uniprot_hit_set = set(uniprot_hit_set)
-        feature_set = set(feature_set)
+        uniprot_hit_set = set()
+        feature_set = set()
         
         for line in table_file:
             hit_type = line.split("\t")[2]

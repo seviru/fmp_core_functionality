@@ -19,9 +19,9 @@ class FeatureStudy:
             self.min_eval = min_evalue
             self.calc_alg = node_score_algorithm
             self.differentiate_gaps = differentiate_gap_positions
-            self.leaf_deleting_list, self.uniprot_hit_hash, self.study_features, self.all_features = self.__setup__(table_path, 
-                                                                                                                uniprot_path, 
-                                                                                                                annotation_features)
+            self.table_info, self.uniprot_info, self.study_features, self.all_features = self.__setup__(table_path, 
+                                                                                                        uniprot_path, 
+                                                                                                        annotation_features)
         except:
             sys.stderr.write("Error at instance initialization.\n")
             sys.exit(1)
@@ -59,10 +59,17 @@ class FeatureStudy:
 
             try:
                 uniprot_info = {}
+                uniprot_hit_set = set()
+                for line in table_info:
+                    hit_name = line.split("\t")[3]
+                    if hit_name not in uniprot_hit_set:
+                        uniprot_hit_set.update([hit_name])               
                 with open(uniprot_path, "r") as uniprot_file:
                     for line in uniprot_file:
                         uniprot_entry = json.loads(line)
-                        uniprot_info.update(uniprot_entry)
+                        for unigene in uniprot_entry.keys():
+                            if unigene in uniprot_hit_set:
+                                uniprot_info.update(uniprot_entry)
                 uniprot_file.close
             except:
                 print("Uniprot file not found.")
@@ -94,12 +101,6 @@ class FeatureStudy:
                 sys.stderr.write("Feature unpacking gone wrong.\n")
                 sys.exit(1)
 
-            try:
-                uniprot_hit_hash, leaf_deleting_list = fp.retrieve_features(annotation_features, table_info, self.min_eval, uniprot_info)
-            except:
-                sys.stderr.write("Uniprot feature processing gone wrong.\n")
-                sys.exit(1)
-
             if self.calc_alg not in {"simple", "all_vs_all", "all_vs_all_means"} and self.differentiate_gaps == "Y":
                 sys.stderr.write("Only calculus algorithm supporting gap differentiation are 'simple', 'all_vs_all', 'all_vs_all_means'.\n")
                 sys.exit(1)
@@ -114,7 +115,7 @@ class FeatureStudy:
             sys.stderr.write("Error at instance setup.\n")
             sys.exit(1)
                 
-        return leaf_deleting_list, uniprot_hit_hash, annotation_features, feature_collection
+        return table_info, uniprot_info, annotation_features, feature_collection
 
 
     def calculate_nodes(self):
@@ -124,14 +125,15 @@ class FeatureStudy:
         of a processed tree.
         """
         try:
+            uniprot_hit_hash, leaf_deleting_list = fp.retrieve_features(self.study_features, self.table_info, self.min_eval, self.uniprot_info)
             tree = PhyloTree(self.tree_in, alignment=self.align_in, alg_format="fasta")
             md = tree.get_midpoint_outgroup()
             tree.set_outgroup(md)
-            position_matrix = fp.get_positions_matrix(self.uniprot_hit_hash, tree)
+            position_matrix = fp.get_positions_matrix(uniprot_hit_hash, tree)
             node_number = 0
             node_scores = {}
             for leaf in tree.iter_leaves():
-                if leaf.name in self.leaf_deleting_list:
+                if leaf.name in leaf_deleting_list:
                     leaf.delete()
             for node in tree.traverse():
                 if node.is_leaf() == False:
