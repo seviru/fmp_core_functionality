@@ -137,7 +137,8 @@ class FeatureStudy:
             for leaf in tree.iter_leaves():
                 if leaf.name in leaf_deleting_list:
                     leaf.delete()
-            for node in tree.traverse():
+            for index, node in enumerate(tree.traverse("preorder")):
+                node._nid = index
                 if node.is_leaf() == False:
                     node_score = round(fp.calculate_node_score(node, position_matrix, self.calc_alg, self.differentiate_gaps), 2) ###AQUI EL ALGORITMO DEBERIA VENIR DE UN ARGUMENTO?
                     node.add_feature("node_score", node_score)
