@@ -10,28 +10,34 @@ import src.feature_processing as fp
 from ete3 import PhyloTree, TreeStyle, SeqMotifFace, TextFace
 
 class FeatureStudy:
-    def __init__(self, tree_path, alignment_path, table_path,
-                uniprot_path, annotation_features, min_evalue, 
-                node_score_algorithm, differentiate_gap_positions):
+    def __init__(self, tree_path, alignment_path, 
+                node_score_algorithm, differentiate_gap_positions,
+                table_path=None, uniprot_path=None, 
+                annotation_features=None, min_evalue=None,
+                position_matrix=None):
         try:
             self.align_in = alignment_path
             self.tree_in = tree_path
-            self.min_eval = min_evalue
             self.calc_alg = node_score_algorithm
             self.differentiate_gaps = differentiate_gap_positions
-            self.table_info, self.uniprot_info, self.study_features, self.all_features = self.__setup__(table_path, 
-                                                                                                        uniprot_path, 
-                                                                                                        annotation_features)
+            self.position_matrix = position_matrix
+            self.__setup_basic__
+            if self.position_matrix == None:
+                print("entered position matrix setup")
+                self.min_eval = min_evalue
+                self.table_info, self.uniprot_info, self.study_features, self.all_features = self.__setup_features__(table_path, 
+                                                                                                            uniprot_path, 
+                                                                                                            annotation_features)
         except:
             sys.stderr.write("Error at instance initialization.\n")
             sys.exit(1)
 
 
-    def __setup__(self, table_path,
-                uniprot_path, annotation_features):
-        """Method to check if the infiles exist, to process the features 
-        the user want to study, and if the parameter "" 
-        corresponds with an algorithm that can actually handle it.
+# SEPARAR SETUPS
+
+    def __setup_basic__(self):
+        """Method to check if the different files exist, as well
+        as the calculus algorithm.
         """
         try:
             try:
@@ -47,7 +53,21 @@ class FeatureStudy:
                 print("Tree file not found.")
                 sys.stderr.write("Tree file not found.")
                 sys.exit(1)
-            
+
+            if self.calc_alg not in {"simple", "all_vs_all", "all_vs_all_means"} and self.differentiate_gaps == "Y":
+                sys.stderr.write("Only calculus algorithm supporting gap differentiation are 'simple', 'all_vs_all', 'all_vs_all_means'.\n")
+                sys.exit(1)
+        except:
+            sys.stderr.write("Error at basic setup.")
+            sys.exit(1)
+        return
+
+    def __setup_features__(self, table_path,
+                uniprot_path, annotation_features):
+        """Method to process the features 
+        the user want to study.
+        """
+        try:
             try:
                 with open(table_path, "r") as table_file:
                     table_info = table_file.readlines()
@@ -101,14 +121,10 @@ class FeatureStudy:
                 sys.stderr.write("Feature unpacking gone wrong.\n")
                 sys.exit(1)
 
-            if self.calc_alg not in {"simple", "all_vs_all", "all_vs_all_means"} and self.differentiate_gaps == "Y":
-                sys.stderr.write("Only calculus algorithm supporting gap differentiation are 'simple', 'all_vs_all', 'all_vs_all_means'.\n")
-                sys.exit(1)
-    
             print("Study instance correctly initiated.\n")
 
         except:
-            sys.stderr.write("Error at instance setup.\n")
+            sys.stderr.write("Error at feature setup.\n")
             sys.exit(1)
                 
         return table_info, uniprot_info, annotation_features, feature_collection
@@ -121,17 +137,19 @@ class FeatureStudy:
         of a processed tree.
         """
         try:
-            print(f"""Computing tree with the following parameters: 
-            - STUDY FEATURES: {self.study_features}
-            - EVALUE THRESHOLD: {self.min_eval}
-            - CALCULUS ALGORITHM: {self.calc_alg}
-            - DIFFERENTIATE GAPS: {self.differentiate_gaps}""")
+            # print(f"""Computing tree with the following parameters: 
+            # - STUDY FEATURES: {self.study_features}
+            # - EVALUE THRESHOLD: {self.min_eval}
+            # - CALCULUS ALGORITHM: {self.calc_alg}
+            # - DIFFERENTIATE GAPS: {self.differentiate_gaps}""")
 
-            uniprot_hit_hash, leaf_deleting_list = fp.retrieve_features(self.study_features, self.table_info, self.min_eval, self.uniprot_info)
             tree = PhyloTree(self.tree_in, alignment=self.align_in, alg_format="fasta")
             md = tree.get_midpoint_outgroup()
             tree.set_outgroup(md)
-            position_matrix = fp.get_positions_matrix(uniprot_hit_hash, tree)
+            leaf_deleting_list = set()
+            if self.position_matrix == None:
+                uniprot_hit_hash, leaf_deleting_list = fp.retrieve_features(self.study_features, self.table_info, self.min_eval, self.uniprot_info)
+                self.position_matrix = fp.get_positions_matrix(uniprot_hit_hash, tree)
             node_number = 0
             node_scores = {}
             for leaf in tree.iter_leaves():
@@ -140,12 +158,11 @@ class FeatureStudy:
             for index, node in enumerate(tree.traverse("preorder")):
                 node._nid = index
                 if node.is_leaf() == False:
-                    node_score = round(fp.calculate_node_score(node, position_matrix, self.calc_alg, self.differentiate_gaps), 2) ###AQUI EL ALGORITMO DEBERIA VENIR DE UN ARGUMENTO?
+                    node_score = round(fp.calculate_node_score(node, self.position_matrix, self.calc_alg, self.differentiate_gaps), 2) ###AQUI EL ALGORITMO DEBERIA VENIR DE UN ARGUMENTO?
                     node.add_feature("node_score", node_score)
                     node_scores[node_number] = node_score
                     node_number += 1
             self.processed_tree = tree
-            self.processed_tree__position_matrix = position_matrix
             self.node_scores = node_scores
         except:
             sys.stderr.write("Error at calculating nodes.\n")
@@ -172,7 +189,7 @@ class FeatureStudy:
             for node in self.processed_tree.traverse():
                 if node.is_leaf() == True:
                     draw_position = 0
-                    for position in self.processed_tree__position_matrix:
+                    for position in self.position_matrix:
                         seqFace = SeqMotifFace(node.sequence[position], seq_format="seq")
                         (self.processed_tree&node.name).add_face(seqFace, draw_position, "aligned")
                         draw_position += 1  
