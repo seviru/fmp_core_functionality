@@ -197,6 +197,7 @@ class FeatureStudy:
                     if node.node_score > plot_threshold:
                         score_face = TextFace(node.node_score)
                         node.add_face(score_face, 0, "branch-top")
+            self.position_matrix = None # So if we recalculate, the position matrix is none, but if the user puts it it isn't
         except:
             sys.stderr.write("Error at designing tree.\n")
             sys.exit(1)
