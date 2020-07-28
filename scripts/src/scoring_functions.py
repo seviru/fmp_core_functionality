@@ -38,6 +38,20 @@ def get_scorer(calculus_algorithm):
 
     return scorer
 
+def merge_annotation(branch):
+    """Merges the different position from the branch annotated so we can compute
+    the whole position as a single annotation.
+    """
+    try:
+        merged_branch_matrix = [list(ele) for ele in list(zip(*branch))]
+        for position, item in enumerate(merged_branch_matrix):
+            merged_branch_matrix[position] = "".join(item)
+    except:
+        sys.stderr.write("Error at unifying annotation.\n")
+        sys.exit(1)
+    
+    return merged_branch_matrix
+
 
 def simple_calculus (first_branch_matrix, second_branch_matrix):
     """Compares the 2 branches between them, taking into account only
@@ -65,16 +79,13 @@ def whole_annotation_simple_calculus (first_branch_matrix, second_branch_matrix)
     from the annotation as an only one. score>=0 (0 being equal nodes).
     """
     try:
+        print("cp1")
         merged_matrix = []
-        merged_branch = []
         leaf_number = len(first_branch_matrix[0]) + len(second_branch_matrix[0])
         score = 0
-        for position, item in enumerate(first_branch_matrix[0]):
-            merged_matrix.append(item + first_branch_matrix[1][position])
-        for position, item in enumerate(second_branch_matrix[0]):
-            merged_branch.append(item + second_branch_matrix[1][position])
-        merged_matrix = [merged_matrix] + [merged_branch]
-
+        first_branch_merged = merge_annotation(first_branch_matrix)
+        second_branch_merged = merge_annotation(second_branch_matrix)
+        merged_matrix = [first_branch_merged] + [second_branch_merged]
         differences = utils.dict_diff(Counter(merged_matrix[0]), Counter(merged_matrix[1]))
         score += sum( [differences[different_aminoacid] / leaf_number for different_aminoacid in differences ] )
         score = round(score, 2)
@@ -119,10 +130,9 @@ def whole_annotation_all_vs_all_calculus (first_branch_matrix, second_branch_mat
         merged_matrix = []
         leaf_number = len(first_branch_matrix[0]) + len(second_branch_matrix[0])
         score = 0
-        for position, item in enumerate(first_branch_matrix[0]):
-            merged_matrix.append(item + first_branch_matrix[1][position])
-        for position, item in enumerate(second_branch_matrix[0]):
-            merged_matrix.append(item + second_branch_matrix[1][position])
+        first_branch_merged = merge_annotation(first_branch_matrix)
+        second_branch_merged = merge_annotation(second_branch_matrix)
+        merged_matrix = first_branch_merged + second_branch_merged
         for aa1, aa2 in itertools.combinations(merged_matrix, 2):
             if aa1 != aa2:
                 score += 1/(fact(leaf_number)/(fact(2)*fact(leaf_number-2))) 
@@ -171,10 +181,9 @@ def whole_annotation_all_vs_all_calculus_means (first_branch_matrix, second_bran
     try:
         merged_matrix = []
         score = 0
-        for position, item in enumerate(first_branch_matrix[0]):
-            merged_matrix.append(item + first_branch_matrix[1][position])
-        for position, item in enumerate(second_branch_matrix[0]):
-            merged_matrix.append(item + second_branch_matrix[1][position])
+        first_branch_merged = merge_annotation(first_branch_matrix)
+        second_branch_merged = merge_annotation(second_branch_matrix)
+        merged_matrix = first_branch_merged + second_branch_merged
         position_comparison = [] 
         for aa1, aa2 in itertools.combinations(merged_matrix, 2):
             if aa1 == aa2:
