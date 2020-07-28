@@ -55,9 +55,13 @@ class FeatureStudy:
                 sys.stderr.write("Tree file not found.")
                 sys.exit(1)
 
-            if self.calc_alg not in {"simple", "all_vs_all", "all_vs_all_means"} and self.differentiate_gaps == "Y":
-                sys.stderr.write("Only calculus algorithm supporting gap differentiation are 'simple', 'all_vs_all', 'all_vs_all_means'.\n")
+            if (config.calculus_algorithms[self.calc_alg]["differentiate_gaps"]) == "N" and self.differentiate_gaps == "Y":
+                sys.stderr.write("Only calculus algorithm supporting gap differentiation are:")
+                for algorithm in config.calculus_algorithms:
+                    if config.calculus_algorithms[algorithm]["differentiate_gaps"] == "Y":
+                        sys.stderr.write(algorithm)
                 sys.exit(1)
+
         except:
             sys.stderr.write("Error at basic setup.")
             sys.exit(1)
