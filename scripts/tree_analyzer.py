@@ -51,9 +51,14 @@ if args.tree_outfile is None and args.node_score_table is None:
       sys.exit(1)
 
 print("Creating study instance...")
-case_study = main.FeatureStudy(args.tree_infile, args.alignment_infile, args.table_infile,
-                           args.uniprot_infile, args.annotation_feature, args.min_evalue,
-                           args.calculus_algorithm, args.differentiate_gap_positions)
+case_study = main.FeatureStudy(tree_path=args.tree_infile, 
+                              alignment_path=args.alignment_infile, 
+                              table_path=args.table_infile,
+                              uniprot_path=args.uniprot_infile, 
+                              annotation_features=args.annotation_feature, 
+                              min_evalue=args.min_evalue,
+                              node_score_algorithm=args.calculus_algorithm, 
+                              differentiate_gap_positions=args.differentiate_gap_positions)
 
 print("Designing tree.")
 case_study.design_tree(plot_threshold=args.plot_threshold)
