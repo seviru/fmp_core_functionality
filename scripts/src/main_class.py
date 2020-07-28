@@ -7,7 +7,9 @@ import json
 import sys
 import os.path
 import src.feature_processing as fp
+from src import config
 from ete3 import PhyloTree, TreeStyle, SeqMotifFace, TextFace
+
 
 class FeatureStudy:
     def __init__(self, tree_path, alignment_path, 
@@ -23,7 +25,6 @@ class FeatureStudy:
             self.position_matrix = position_matrix
             self.__setup_basic__
             if self.position_matrix == None:
-                print("entered position matrix setup")
                 self.min_eval = min_evalue
                 self.table_info, self.uniprot_info, self.study_features, self.all_features = self.__setup_features__(table_path, 
                                                                                                             uniprot_path, 
@@ -121,13 +122,30 @@ class FeatureStudy:
                 sys.stderr.write("Feature unpacking gone wrong.\n")
                 sys.exit(1)
 
-            print("Study instance correctly initiated.\n")
-
         except:
             sys.stderr.write("Error at feature setup.\n")
             sys.exit(1)
                 
         return table_info, uniprot_info, annotation_features, feature_collection
+
+    def update_features(self, update_parameters):
+        """Method to update our case study when
+        new parameters arrive.
+        """
+        if update_parameters["calc_alg"][0] is not "": # IF PARAMETER HAS BEEN MODIFIED
+            self.calc_alg = update_parameters["calc_alg"][0]
+        if "features" in update_parameters:
+            self.study_features = set(update_parameters["features"])
+        if update_parameters["evalue"][0] is not "":
+            self.min_eval = float(update_parameters["evalue"][0])
+        if (config.calculus_algorithms[self.calc_alg]["differentiate_gaps"]) == "N": # TO ENSURE THEY DONT CHANGE GAP PARAMETER IN A NOT ALLOWED ALGOORITHM
+            self.differentiate_gaps = "N"
+        else:
+            if "diff_gaps" in update_parameters and update_parameters["diff_gaps"][0] is not "":
+                self.differentiate_gaps = update_parameters["diff_gaps"][0]
+        self.position_matrix = None
+
+        return
 
 
     def calculate_nodes(self):
@@ -197,7 +215,6 @@ class FeatureStudy:
                     if node.node_score > plot_threshold:
                         score_face = TextFace(node.node_score)
                         node.add_face(score_face, 0, "branch-top")
-            self.position_matrix = None # So if we recalculate, the position matrix is none, but if the user puts it it isn't
         except:
             sys.stderr.write("Error at designing tree.\n")
             sys.exit(1)
