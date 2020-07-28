@@ -130,7 +130,9 @@ class FeatureStudy:
 
     def update_features(self, update_parameters):
         """Method to update our case study when
-        new parameters arrive.
+        new parameters arrive. update_parameters is a
+        {dictionary} with "calc_alg"(calculus algorithm), "features",
+        "evalue" and "differentiate_gaps" as possible keys.
         """
         if update_parameters["calc_alg"][0] is not "": # IF PARAMETER HAS BEEN MODIFIED
             self.calc_alg = update_parameters["calc_alg"][0]
