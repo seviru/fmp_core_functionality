@@ -29,6 +29,16 @@ class FeatureStudy:
                 self.table_info, self.uniprot_info, self.study_features, self.all_features = self.__setup_features__(table_path, 
                                                                                                             uniprot_path, 
                                                                                                             annotation_features)
+                print(f"""Computing tree with the following parameters: 
+                    - STUDY FEATURES: {self.study_features}
+                    - EVALUE THRESHOLD: {self.min_eval}
+                    - CALCULUS ALGORITHM: {self.calc_alg}
+                    - DIFFERENTIATE GAPS: {self.differentiate_gaps}""")
+            else:
+                print(f"""Computing tree with the following parameters: 
+                    - REQUESTED POSITION(S): {self.position_matrix}
+                    - CALCULUS ALGORITHM: {self.calc_alg}
+                    - DIFFERENTIATE GAPS: {self.differentiate_gaps}""")
         except:
             sys.stderr.write("Error at instance initialization.\n")
             sys.exit(1)
@@ -138,18 +148,18 @@ class FeatureStudy:
         {dictionary} with "calc_alg"(calculus algorithm), "features",
         "evalue" and "differentiate_gaps" as possible keys.
         """
-        if update_parameters["calc_alg"][0] is not "": # IF PARAMETER HAS BEEN MODIFIED
+        if "calc_alg" in update_parameters and update_parameters["calc_alg"][0] is not "": # IF PARAMETER HAS BEEN MODIFIED
             self.calc_alg = update_parameters["calc_alg"][0]
         if "features" in update_parameters:
             self.study_features = set(update_parameters["features"])
-        if update_parameters["evalue"][0] is not "":
+        if "evalue" in update_parameters and update_parameters["evalue"][0] is not "":
             self.min_eval = float(update_parameters["evalue"][0])
         if (config.calculus_algorithms[self.calc_alg]["differentiate_gaps"]) == "N": # TO ENSURE THEY DONT CHANGE GAP PARAMETER IN A NOT ALLOWED ALGOORITHM
             self.differentiate_gaps = "N"
         else:
             if "diff_gaps" in update_parameters and update_parameters["diff_gaps"][0] is not "":
                 self.differentiate_gaps = update_parameters["diff_gaps"][0]
-        self.position_matrix = None
+        # self.position_matrix = None
 
         return
 
@@ -161,12 +171,6 @@ class FeatureStudy:
         of a processed tree.
         """
         try:
-            # print(f"""Computing tree with the following parameters: 
-            # - STUDY FEATURES: {self.study_features}
-            # - EVALUE THRESHOLD: {self.min_eval}
-            # - CALCULUS ALGORITHM: {self.calc_alg}
-            # - DIFFERENTIATE GAPS: {self.differentiate_gaps}""")
-
             tree = PhyloTree(self.tree_in, alignment=self.align_in, alg_format="fasta")
             md = tree.get_midpoint_outgroup()
             tree.set_outgroup(md)
@@ -226,6 +230,16 @@ class FeatureStudy:
             sys.exit(1)
 
         return
+
+    def etetree_to_image(self):
+        """It changes an ete3 tree into an actual image.
+        """
+        ts = TreeStyle()
+        ts.layout_fn = lambda x: True
+        base64_img, img_map = self.processed_tree.render("%%return.PNG", tree_style=ts)
+        image_tree = base64_img.data().decode("utf-8")
+
+        return image_tree
 
 
     def plot_tree(self, outfile, tree="DESIGN", width=800, heigth=2000, units="px", plot_threshold=0):
