@@ -146,7 +146,7 @@ class FeatureStudy:
         """Method to update our case study when
         new parameters arrive. update_parameters is a
         {dictionary} with "calc_alg"(calculus algorithm), "features",
-        "evalue" and "differentiate_gaps" as possible keys.
+        "evalue", "differentiate_gaps" and "annotation_positions as possible keys.
         """
         if "calc_alg" in update_parameters and update_parameters["calc_alg"][0] is not "": # IF PARAMETER HAS BEEN MODIFIED
             self.calc_alg = update_parameters["calc_alg"][0]
@@ -158,11 +158,11 @@ class FeatureStudy:
             self.differentiate_gaps = "N"
         else:
             if "diff_gaps" in update_parameters and update_parameters["diff_gaps"][0] is not "":
-                self.differentiate_gaps = update_parameters["diff_gaps"][0]
-        # self.position_matrix = None
+                self.differentiate_gaps = update_parameters["diff_gaps"][0] 
+        if "annotation_positions" in update_parameters and update_parameters["annotation_positions"][0] is not "":
+            self.position_matrix = [int(position) for position in list(set(update_parameters["annotation_positions"][0].split(",")))]
 
         return
-
 
     def calculate_nodes(self):
         """Method to calculate the different internal node scores
