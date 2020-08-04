@@ -123,25 +123,31 @@ def calculate_node_score (node, position_matrix, calculus_algorithm, differentia
     (calculus_algorithm = "simple").
     """
     try:
-        branch_matrix = []
-        for branch in node.get_children():
-            aminoacid_matrix = []
-            for position in position_matrix:
-                position_aminoacids = []
-                for leaf in branch.iter_leaves():
-                    if (leaf.sequence[position] == "-" and differentiate_gaps == "Y"):
-                        continue
-                    else:
-                        position_aminoacids.append(leaf.sequence[position])
-
-                aminoacid_matrix.append(position_aminoacids)
-            branch_matrix.append(aminoacid_matrix)
-        first_branch_matrix = branch_matrix[0]
-        second_branch_matrix = branch_matrix[1]
+        node_sequence_matrix = annotated_sequence_extractor(node, position_matrix, differentiate_gaps)
         scorer = sf.get_scorer(calculus_algorithm)
-        score = scorer(first_branch_matrix, second_branch_matrix)
+        score = scorer(node_sequence_matrix[0], node_sequence_matrix[1])
     except:
         sys.stderr.write("Error at calculating node score (feature_processing.calculate_node_score).\n")
         sys.exit(1)
 
     return score
+
+def annotated_sequence_extractor(node, position_matrix, differentiate_gaps):
+    """For a given node, it extracts the desired positions for both of its branches,
+    returning them as a list with two elements (one for each branch).
+    """
+    branch_matrix = []
+    for branch in node.get_children():
+        aminoacid_matrix = []
+        for position in position_matrix:
+            position_aminoacids = []
+            for leaf in branch.iter_leaves():
+                if (leaf.sequence[position] == "-" and differentiate_gaps == "Y"):
+                    continue
+                else:
+                    position_aminoacids.append(leaf.sequence[position])
+
+            aminoacid_matrix.append(position_aminoacids)
+        branch_matrix.append(aminoacid_matrix)
+    
+    return branch_matrix
