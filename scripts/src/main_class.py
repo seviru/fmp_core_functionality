@@ -148,19 +148,24 @@ class FeatureStudy:
         {dictionary} with "calc_alg"(calculus algorithm), "features",
         "evalue", "differentiate_gaps" and "annotation_positions as possible keys.
         """
-        if "calculus_algorithm" in update_parameters and update_parameters["calculus_algorithm"][0] is not "": # IF PARAMETER HAS BEEN MODIFIED
-            self.calc_alg = update_parameters["calculus_algorithm"][0]
-        if "features" in update_parameters:
-            self.study_features = set(update_parameters["features"])
-        if "evalue" in update_parameters and update_parameters["evalue"][0] is not "":
-            self.min_eval = float(update_parameters["evalue"][0])
-        if (config.calculus_algorithms[self.calc_alg]["differentiate_gaps"]) == "N": # TO ENSURE THEY DONT CHANGE GAP PARAMETER IN A NOT ALLOWED ALGOORITHM
-            self.differentiate_gaps = "N"
-        else:
-            if "differentiate_gaps" in update_parameters and update_parameters["differentiate_gaps"][0] is not "":
-                self.differentiate_gaps = update_parameters["differentiate_gaps"][0] 
-        if "annotation_positions" in update_parameters and update_parameters["annotation_positions"][0] is not "":
-            self.position_matrix = [int(position) for position in list(set(update_parameters["annotation_positions"][0].split(",")))]
+        try:
+            if "calculus_algorithm" in update_parameters and update_parameters["calculus_algorithm"][0] is not "": # IF PARAMETER HAS BEEN MODIFIED
+                self.calc_alg = update_parameters["calculus_algorithm"][0]
+            if "features" in update_parameters:
+                self.study_features = set(update_parameters["features"])
+            if "evalue" in update_parameters and update_parameters["evalue"][0] is not "":
+                self.min_eval = float(update_parameters["evalue"][0])
+            if (config.calculus_algorithms[self.calc_alg]["differentiate_gaps"]) == "N": # TO ENSURE THEY DONT CHANGE GAP PARAMETER IN A NOT ALLOWED ALGOORITHM
+                self.differentiate_gaps = "N"
+            else:
+                if "differentiate_gaps" in update_parameters and update_parameters["differentiate_gaps"][0] is not "":
+                    self.differentiate_gaps = update_parameters["differentiate_gaps"][0] 
+            if "annotation_positions" in update_parameters and update_parameters["annotation_positions"][0] is not "":
+                self.position_matrix = [int(position) for position in list(set(update_parameters["annotation_positions"][0].split(",")))]
+        
+        except:
+            sys.stderr.write("Error at feature updating.\n")
+            sys.exit(1)
 
         return
 
@@ -186,12 +191,13 @@ class FeatureStudy:
             for index, node in enumerate(tree.traverse("preorder")):
                 node._nid = index
                 if node.is_leaf() == False:
-                    node_score = round(fp.calculate_node_score(node, self.position_matrix, self.calc_alg, self.differentiate_gaps), 2) ###AQUI EL ALGORITMO DEBERIA VENIR DE UN ARGUMENTO?
+                    node_score = round(fp.calculate_node_score(node, self.position_matrix, self.calc_alg, self.differentiate_gaps), 2)
                     node.add_feature("node_score", node_score)
                     node_scores[node_number] = node_score
                     node_number += 1
             self.processed_tree = tree
             self.node_scores = node_scores
+
         except:
             sys.stderr.write("Error at calculating nodes.\n")
             sys.exit(1)
@@ -225,6 +231,8 @@ class FeatureStudy:
                     if node.node_score > plot_threshold:
                         score_face = TextFace(node.node_score)
                         node.add_face(score_face, 0, "branch-top")
+            self.position_matrix = None # Don't delete this line. Seriously. It enables you to recalculate the position matrix in next iterations.
+
         except:
             sys.stderr.write("Error at designing tree.\n")
             sys.exit(1)
@@ -234,10 +242,14 @@ class FeatureStudy:
     def etetree_to_image(self):
         """It changes an ete3 tree into an actual image.
         """
-        ts = TreeStyle()
-        ts.layout_fn = lambda x: True
-        base64_img, img_map = self.processed_tree.render("%%return.PNG", tree_style=ts)
-        image_tree = base64_img.data().decode("utf-8")
+        try:
+            ts = TreeStyle()
+            ts.layout_fn = lambda x: True
+            base64_img, img_map = self.processed_tree.render("%%return.PNG", tree_style=ts)
+            image_tree = base64_img.data().decode("utf-8")
+        except:
+            sys.stderr.write("Error at image encoding.\n")
+            sys.exit(1)
 
         return image_tree
 
