@@ -77,6 +77,7 @@ class FeatureStudy:
             sys.exit(1)
         return
 
+
     def __setup_features__(self, table_path,
                 uniprot_path, annotation_features):
         """Method to process the features 
@@ -142,6 +143,7 @@ class FeatureStudy:
                 
         return table_info, uniprot_info, annotation_features, feature_collection
 
+
     def update_features(self, update_parameters):
         """Method to update our case study when
         new parameters arrive. update_parameters is a
@@ -169,6 +171,7 @@ class FeatureStudy:
 
         return
 
+
     def calculate_nodes(self):
         """Method to calculate the different internal node scores
         for a given calculus method, and store those values both in
@@ -185,18 +188,24 @@ class FeatureStudy:
                 self.position_matrix = fp.get_positions_matrix(uniprot_hit_hash, tree)
             node_number = 0
             node_scores = {}
+            node_haplotypes = {}
             for leaf in tree.iter_leaves():
                 if leaf.name in leaf_deleting_list:
                     leaf.delete()
             for index, node in enumerate(tree.traverse("preorder")):
                 node._nid = index
                 if node.is_leaf() == False:
-                    node_score = round(fp.calculate_node_score(node, self.position_matrix, self.calc_alg, self.differentiate_gaps), 2)
+                    node_sequence_matrix = fp.annotated_sequence_extractor(node, self.position_matrix, self.differentiate_gaps)
+                    node_score = round(fp.calculate_node_score(node_sequence_matrix, self.calc_alg), 2)
                     node.add_feature("node_score", node_score)
                     node_scores[node_number] = node_score
+                    node_haplotype = fp.haplotype_parse(node_sequence_matrix)
+                    node.add_feature("node_haplotype", node_haplotype)
+                    node_haplotypes[node_number] = node_haplotype
                     node_number += 1
             self.processed_tree = tree
             self.node_scores = node_scores
+            self.node_haplotypes = node_haplotypes
 
         except:
             sys.stderr.write("Error at calculating nodes.\n")
@@ -239,6 +248,7 @@ class FeatureStudy:
 
         return
 
+
     def etetree_to_image(self):
         """It changes an ete3 tree into an actual image.
         """
@@ -252,7 +262,7 @@ class FeatureStudy:
             sys.exit(1)
 
         return image_tree
-
+        
 
     def plot_tree(self, outfile, tree="DESIGN", width=800, heigth=2000, units="px", plot_threshold=0):
         """Method to plot a tree to a file given a set of

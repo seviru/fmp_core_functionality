@@ -3,6 +3,7 @@
 """
 
 import src.scoring_functions as sf
+import src.utils as utils
 import sys
 
 def check_features (table_file, evalue_threshold, uniprot_info):
@@ -116,14 +117,13 @@ def get_positions_matrix (feature_hash, tree):
     return position_matrix
 
 
-def calculate_node_score (node, position_matrix, calculus_algorithm, differentiate_gaps):
+def calculate_node_score (node_sequence_matrix, calculus_algorithm):
     """Calculates the node score for a given tree branch, with different
     algorithm variations. If user wants to ignore positions that are gaps,
-    the only algorithm that does this at the moment (06/05/2020) is "simple_calculus"
-    (calculus_algorithm = "simple").
+    the only algorithms which can stand this options are the ones with a "Y"
+    in the config file under the section "differentiate_gaps".
     """
     try:
-        node_sequence_matrix = annotated_sequence_extractor(node, position_matrix, differentiate_gaps)
         scorer = sf.get_scorer(calculus_algorithm)
         score = scorer(node_sequence_matrix[0], node_sequence_matrix[1])
     except:
@@ -132,22 +132,63 @@ def calculate_node_score (node, position_matrix, calculus_algorithm, differentia
 
     return score
 
+
+def haplotype_parse(node_sequence_matrix):
+    """Counts the different haplotypes within a node.
+    """
+    for index, branch in enumerate(node_sequence_matrix):
+        node_sequence_matrix[index] = merge_annotation(branch)
+    node_sequence_matrix = node_sequence_matrix[0] + node_sequence_matrix[1]
+    haplotype_dict = {}
+    for haplotype in node_sequence_matrix:
+        if haplotype not in haplotype_dict:
+            haplotype_dict[haplotype] = 1
+        else:
+            haplotype_dict[haplotype] += 1
+    
+    haplotype_dict = utils.sort_dict_byvalue(haplotype_dict)
+
+    return haplotype_dict
+
+
 def annotated_sequence_extractor(node, position_matrix, differentiate_gaps):
     """For a given node, it extracts the desired positions for both of its branches,
     returning them as a list with two elements (one for each branch).
     """
-    branch_matrix = []
-    for branch in node.get_children():
-        aminoacid_matrix = []
-        for position in position_matrix:
-            position_aminoacids = []
-            for leaf in branch.iter_leaves():
-                if (leaf.sequence[position] == "-" and differentiate_gaps == "Y"):
-                    continue
-                else:
-                    position_aminoacids.append(leaf.sequence[position])
+    try:
+        branch_matrix = []
+        for branch in node.get_children():
+            aminoacid_matrix = []
+            for position in position_matrix:
+                position_aminoacids = []
+                for leaf in branch.iter_leaves():
+                    if (leaf.sequence[position] == "-" and differentiate_gaps == "Y"):
+                        continue
+                    else:
+                        position_aminoacids.append(leaf.sequence[position])
 
-            aminoacid_matrix.append(position_aminoacids)
-        branch_matrix.append(aminoacid_matrix)
-    
+                aminoacid_matrix.append(position_aminoacids)
+            branch_matrix.append(aminoacid_matrix)
+    except:
+        sys.stderr.write("Error at extracting annotatated sequence matrix (feature_processing.annotated_sequence_extractor).\n")
+        sys.exit(1)
+
     return branch_matrix
+
+
+def merge_annotation(branch):
+    """Merges the different position from the branch annotated so we can compute
+    the whole position as a single annotation.
+    """
+    try:
+        merged_branch_matrix = [list(ele) for ele in list(zip(*branch))]
+        for position, item in enumerate(merged_branch_matrix):
+            merged_branch_matrix[position] = "".join(item)
+    except:
+        sys.stderr.write("Error at unifying annotation.\n")
+        sys.exit(1)
+    
+    return merged_branch_matrix
+
+
+## END
