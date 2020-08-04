@@ -148,8 +148,8 @@ class FeatureStudy:
         {dictionary} with "calc_alg"(calculus algorithm), "features",
         "evalue", "differentiate_gaps" and "annotation_positions as possible keys.
         """
-        if "calc_alg" in update_parameters and update_parameters["calc_alg"][0] is not "": # IF PARAMETER HAS BEEN MODIFIED
-            self.calc_alg = update_parameters["calc_alg"][0]
+        if "calculus_algorithm" in update_parameters and update_parameters["calculus_algorithm"][0] is not "": # IF PARAMETER HAS BEEN MODIFIED
+            self.calc_alg = update_parameters["calculus_algorithm"][0]
         if "features" in update_parameters:
             self.study_features = set(update_parameters["features"])
         if "evalue" in update_parameters and update_parameters["evalue"][0] is not "":
@@ -157,8 +157,8 @@ class FeatureStudy:
         if (config.calculus_algorithms[self.calc_alg]["differentiate_gaps"]) == "N": # TO ENSURE THEY DONT CHANGE GAP PARAMETER IN A NOT ALLOWED ALGOORITHM
             self.differentiate_gaps = "N"
         else:
-            if "diff_gaps" in update_parameters and update_parameters["diff_gaps"][0] is not "":
-                self.differentiate_gaps = update_parameters["diff_gaps"][0] 
+            if "differentiate_gaps" in update_parameters and update_parameters["differentiate_gaps"][0] is not "":
+                self.differentiate_gaps = update_parameters["differentiate_gaps"][0] 
         if "annotation_positions" in update_parameters and update_parameters["annotation_positions"][0] is not "":
             self.position_matrix = [int(position) for position in list(set(update_parameters["annotation_positions"][0].split(",")))]
 
