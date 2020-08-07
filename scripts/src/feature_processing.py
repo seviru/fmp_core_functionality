@@ -163,7 +163,7 @@ def annotated_sequence_extractor(node, position_matrix, differentiate_gaps):
                 position_aminoacids = []
                 for leaf in branch.iter_leaves():
                     if (leaf.sequence[position] == "-" and differentiate_gaps == "Y"):
-                        continue
+                        position_aminoacids.append("")
                     else:
                         position_aminoacids.append(leaf.sequence[position])
 
