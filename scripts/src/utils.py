@@ -3,9 +3,11 @@
 for different scripts or functions.
 """
 
+import sys
+
 def dict_diff(a, b):
     """Returns a dictionary result of the elements only present in one
-    of the inputs
+    of the inputs.
     """
     return {k: a[k] if k in a else b[k] for k in a.keys() ^ b.keys()}
 
