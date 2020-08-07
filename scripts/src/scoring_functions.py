@@ -47,11 +47,18 @@ def simple_calculus (first_branch_matrix, second_branch_matrix):
     try:
         score = 0
         for position, item in enumerate(first_branch_matrix):
-            leaf_number = len(first_branch_matrix[position]) + len(second_branch_matrix[position])
+            leaf_number = 0
+            for aminoacid in (first_branch_matrix[position] + second_branch_matrix[position]):
+                if aminoacid != "":
+                    leaf_number += 1
             differences = utils.dict_diff(Counter(item), Counter(second_branch_matrix[position]))
-            if (len(first_branch_matrix[position]) == 0 or len(second_branch_matrix[position]) == 0):   # If one of the compared positions is always a gap
-                continue                                                                                # we skip taking into account this leaf for score calcule.
+            if "" in differences:
+                del differences[""]
+            if (all(aminoacid == "" for aminoacid in first_branch_matrix[position]) or 
+                all(aminoacid == "" for aminoacid in second_branch_matrix[position])) == True:  # If one of the compared positions is always a gap
+                continue
             score += sum( [differences[different_aminoacid] / leaf_number for different_aminoacid in differences ] )
+            print(f"score:::{score}")
         score = round(score, 2)
     except:
         sys.stderr.write("Error at execution of calculus function (scoring_functions.simple_calculus).\n")
@@ -90,7 +97,7 @@ def all_vs_all_calculus (first_branch_matrix, second_branch_matrix):
         aminoacid_matrix = []
         score = 0
         for position in range(len(first_branch_matrix)):
-            if (len(first_branch_matrix[position]) == 0 or len(second_branch_matrix[position]) == 0):
+            if (len(first_branch_matrix[position]) == 0 or len(second_branch_matrix[position]) == 0): # Don't need it right now, but saving it just in case
                 continue
             else:
                 aminoacid_matrix.append(first_branch_matrix[position] + second_branch_matrix[position])
