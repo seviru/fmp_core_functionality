@@ -155,6 +155,7 @@ class FeatureStudy:
                 self.calc_alg = update_parameters["calculus_algorithm"][0]
             if "features" in update_parameters:
                 self.study_features = set(update_parameters["features"])
+                self.position_matrix = None
             if "evalue" in update_parameters and update_parameters["evalue"][0] is not "":
                 self.min_eval = float(update_parameters["evalue"][0])
             if (config.calculus_algorithms[self.calc_alg]["differentiate_gaps"]) == "N": # TO ENSURE THEY DONT CHANGE GAP PARAMETER IN A NOT ALLOWED ALGOORITHM
@@ -185,7 +186,7 @@ class FeatureStudy:
             leaf_deleting_list = set()
             if self.position_matrix == None:
                 uniprot_hit_hash, leaf_deleting_list = fp.retrieve_features(self.study_features, self.table_info, self.min_eval, self.uniprot_info)
-                self.position_matrix = fp.get_positions_matrix(uniprot_hit_hash, tree)
+                self.position_matrix = fp.get_positions_matrix(uniprot_hit_hash, tree) # If we want to update the features. we have to delete the position matrix
             node_number = 0
             node_scores = {}
             node_haplotypes = {}
@@ -240,7 +241,6 @@ class FeatureStudy:
                     if node.node_score > plot_threshold:
                         score_face = TextFace(node.node_score)
                         node.add_face(score_face, 0, "branch-top")
-            self.position_matrix = None # Don't delete this line. Seriously. It enables you to recalculate the position matrix in next iterations.
 
         except:
             sys.stderr.write("Error at designing tree.\n")
