@@ -97,14 +97,15 @@ def all_vs_all_calculus (first_branch_matrix, second_branch_matrix):
         aminoacid_matrix = []
         score = 0
         for position in range(len(first_branch_matrix)):
-            if (len(first_branch_matrix[position]) == 0 or len(second_branch_matrix[position]) == 0): # Don't need it right now, but saving it just in case
+            if (all(aminoacid == "" for aminoacid in first_branch_matrix[position]) or 
+                all(aminoacid == "" for aminoacid in second_branch_matrix[position])) == True:
                 continue
             else:
                 aminoacid_matrix.append(first_branch_matrix[position] + second_branch_matrix[position])
         for position_aminoacids in aminoacid_matrix:
             leaf_number = len(position_aminoacids)
             for aa1, aa2 in itertools.combinations(position_aminoacids, 2):
-                if aa1 != aa2:
+                if aa1 != aa2 and (aa1 != "" and aa2 != ""):
                     score += 1/(fact(leaf_number)/(fact(2)*fact(leaf_number-2)))
         score = round(score, 2)
     except:
@@ -144,10 +145,11 @@ def all_vs_all_calculus_means (first_branch_matrix, second_branch_matrix):
     try:
         position_means = []
         for position in range(len(first_branch_matrix)):
-            if (len(first_branch_matrix[position]) == 0 or len(second_branch_matrix[position]) == 0):
+            if (all(aminoacid == "" for aminoacid in first_branch_matrix[position]) or 
+                all(aminoacid == "" for aminoacid in second_branch_matrix[position])) == True:
                 continue
             else:
-                position_aminoacids = first_branch_matrix[position] + second_branch_matrix[position]        
+                position_aminoacids = [aminoacid for aminoacid in (first_branch_matrix[position] + second_branch_matrix[position]) if aminoacid != ""]     
                 position_comparison = []
                 for aa1, aa2 in itertools.combinations(position_aminoacids, 2):
                     if aa1 == aa2:
