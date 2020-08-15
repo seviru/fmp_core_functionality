@@ -7,6 +7,7 @@ import json
 import sys
 import os.path
 import src.feature_processing as fp
+import logomaker
 from src import config
 from ete3 import PhyloTree, TreeStyle, SeqMotifFace, TextFace
 
@@ -75,6 +76,7 @@ class FeatureStudy:
         except:
             sys.stderr.write("Error at basic setup.")
             sys.exit(1)
+
         return
 
 
@@ -186,27 +188,48 @@ class FeatureStudy:
             leaf_deleting_list = set()
             if self.position_matrix == None:
                 uniprot_hit_hash, leaf_deleting_list = fp.retrieve_features(self.study_features, self.table_info, self.min_eval, self.uniprot_info)
-                self.position_matrix = fp.get_positions_matrix(uniprot_hit_hash, tree) # If we want to update the features. we have to delete the position matrix
-            node_number = 0
-            node_scores = {}
-            node_haplotypes = {}
+                self.position_matrix = fp.get_positions_matrix(uniprot_hit_hash, tree) # If we want to update the features, we have to delete the position matrix (with update method)
             for leaf in tree.iter_leaves():
                 if leaf.name in leaf_deleting_list:
                     leaf.delete()
+
+            node_number = 0
+            node_scores = {}
+            node_haplotypes = {}
+            node_haplotype_matrices = {}
+            node_haplotype_logos = {}
             for index, node in enumerate(tree.traverse("preorder")):
                 node._nid = index
                 if node.is_leaf() == False:
                     node_sequence_matrix = fp.annotated_sequence_extractor(node, self.position_matrix, self.differentiate_gaps)
+
                     node_score = round(fp.calculate_node_score(node_sequence_matrix, self.calc_alg), 2)
                     node.add_feature("node_score", node_score)
                     node_scores[node_number] = node_score
+
                     node_haplotype = fp.haplotype_parse(node_sequence_matrix)
                     node.add_feature("node_haplotype", node_haplotype)
                     node_haplotypes[node_number] = node_haplotype
+
+                    node_haplotype_matrix = fp.haplotype_matrix_calculator(node_sequence_matrix)
+                    node.add_feature("node_haplotype_matrix", node_haplotype_matrix)
+                    node_haplotype_matrices[node_number] = node_haplotype_matrix
+
+                    if node_haplotype_matrix is not None:
+                        node_haplotype_logo = logomaker.Logo(node_haplotype_matrix,
+                                                             color_scheme="dmslogo_funcgroup",
+                                                             show_spines=False)
+                    else:
+                        node_haplotype_logo = None
+                    node.add_feature("node_haplotype_logo", node_haplotype_logo)
+                    node_haplotype_logos[node_number] = node_haplotype_logo    
+
                     node_number += 1
+                    
             self.processed_tree = tree
             self.node_scores = node_scores
             self.node_haplotypes = node_haplotypes
+            self.node_haplotype_matrices = node_haplotype_matrices
 
         except:
             sys.stderr.write("Error at calculating nodes.\n")
@@ -280,6 +303,8 @@ class FeatureStudy:
         except:
             sys.stderr.write("Error at plotting tree.\n")
             sys.exit(1)
+        
+        return
 
 
     def write_node_file(self, outfile):
@@ -294,5 +319,6 @@ class FeatureStudy:
             sys.stderr.write("Error at writing nodes to file.\n")
             sys.exit(1)
 
+        return
 
 ## END

@@ -5,6 +5,8 @@
 import src.scoring_functions as sf
 import src.utils as utils
 import sys
+import logomaker
+import re
 
 def check_features (table_file, evalue_threshold, uniprot_info):
     """Returns a set of the present annotated features for a given table
@@ -136,17 +138,19 @@ def calculate_node_score (node_sequence_matrix, calculus_algorithm):
 def haplotype_parse(node_sequence_matrix):
     """Counts the different haplotypes within a node.
     """
-    for index, branch in enumerate(node_sequence_matrix):
-        node_sequence_matrix[index] = merge_annotation(branch)
-    node_sequence_matrix = node_sequence_matrix[0] + node_sequence_matrix[1]
-    haplotype_dict = {}
-    for haplotype in node_sequence_matrix:
-        if haplotype not in haplotype_dict:
-            haplotype_dict[haplotype] = 1
-        else:
-            haplotype_dict[haplotype] += 1
-    
-    haplotype_dict = utils.sort_dict_byvalue(haplotype_dict)
+    try:
+        sequence_list = nseqmatrix_to_seqlist(node_sequence_matrix)    
+        haplotype_dict = {}
+        for haplotype in sequence_list:
+            if haplotype not in haplotype_dict:
+                haplotype_dict[haplotype] = 1
+            else:
+                haplotype_dict[haplotype] += 1
+        
+        haplotype_dict = utils.sort_dict_byvalue(haplotype_dict)
+    except:
+        sys.stderr.write("Error at parsing haplotypes (feature_processing.haplotype_parse).\n")
+        sys.exit(1)
 
     return haplotype_dict
 
@@ -163,7 +167,7 @@ def annotated_sequence_extractor(node, position_matrix, differentiate_gaps):
                 position_aminoacids = []
                 for leaf in branch.iter_leaves():
                     if (leaf.sequence[position] == "-" and differentiate_gaps == "Y"):
-                        position_aminoacids.append("")
+                        position_aminoacids.append(" ")
                     else:
                         position_aminoacids.append(leaf.sequence[position])
 
@@ -185,10 +189,61 @@ def merge_annotation(branch):
         for position, item in enumerate(merged_branch_matrix):
             merged_branch_matrix[position] = "".join(item)
     except:
-        sys.stderr.write("Error at unifying annotation.\n")
+        sys.stderr.write("Error at unifying annotation (feature_processing.merge_annotation).\n")
         sys.exit(1)
     
     return merged_branch_matrix
+
+
+def nseqmatrix_to_seqlist(node_sequence_matrix):
+    """Transforms our node_sequence_matrix data structure into a list
+    of the sequences it contains.
+    """
+    try:
+        seq_list = []
+        for branch in node_sequence_matrix:
+            seq_list.extend(merge_annotation(branch))
+    except:
+        sys.stderr.write("Error at transforming node_sequence_matrix into sequence list (feature_processing.nseqmatrix_to_seqlist).\n")
+        sys.exit(1)
+
+    return seq_list
+
+
+def haplotype_matrix_calculator(node_sequence_matrix):
+    """Creates our sequence list for a given node into a matrix, useful to provide
+    data to other functions such as logomaker.
+    """
+    try:
+        sequence_list = nseqmatrix_to_seqlist(node_sequence_matrix)
+        full_gap_list = True
+        for index, sequence in enumerate(sequence_list):
+            sequence_list[index] = sequence.replace(" ", "-")
+            if sequence_is_gapsonly(sequence_list[index]) == False:
+                full_gap_list = False
+        
+        if full_gap_list == False:
+            frequency_matrix = logomaker.alignment_to_matrix(sequence_list)
+        else:
+            frequency_matrix = None
+    except:
+        sys.stderr.write("Error at calculating haplotype matrix (feature_processing.haplotype_matrix_calculator).\n")
+        sys.exit(1)
+
+    return frequency_matrix
+
+
+def sequence_is_gapsonly(sequence):
+    """Small function that checks if a given sequence is composed
+    only by gaps.
+    """
+    try:
+        search = re.compile(r'[^\-.]').search
+    except:
+        sys.stderr.write("Error at checking if sequencec is only gaps (feature_processing.sequence_is_gapsonly).\n")
+        sys.exit(1)
+        
+    return not bool(search(sequence))
 
 
 ## END
