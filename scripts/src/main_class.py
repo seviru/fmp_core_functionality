@@ -214,7 +214,6 @@ class FeatureStudy:
                     node_haplotype_matrix = fp.haplotype_matrix_calculator(node_sequence_matrix)
                     node.add_feature("node_haplotype_matrix", node_haplotype_matrix)
                     node_haplotype_matrices[node_number] = node_haplotype_matrix
-
                     if node_haplotype_matrix is not None:
                         node_haplotype_logo = logomaker.Logo(node_haplotype_matrix,
                                                              color_scheme="dmslogo_funcgroup",
@@ -230,6 +229,7 @@ class FeatureStudy:
             self.node_scores = node_scores
             self.node_haplotypes = node_haplotypes
             self.node_haplotype_matrices = node_haplotype_matrices
+            self.node_haplotype_logos = node_haplotype_logos
 
         except:
             sys.stderr.write("Error at calculating nodes.\n")
