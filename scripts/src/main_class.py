@@ -8,6 +8,9 @@ import sys
 import os.path
 import src.feature_processing as fp
 import logomaker
+import io
+import urllib
+import base64
 from src import config
 from ete3 import PhyloTree, TreeStyle, SeqMotifFace, TextFace
 
@@ -218,6 +221,7 @@ class FeatureStudy:
                         node_haplotype_logo = logomaker.Logo(node_haplotype_matrix,
                                                              color_scheme="dmslogo_funcgroup",
                                                              show_spines=False)
+                        node_haplotype_logo = node_haplotype_logo.fig
                     else:
                         node_haplotype_logo = None
                     node.add_feature("node_haplotype_logo", node_haplotype_logo)
@@ -280,6 +284,8 @@ class FeatureStudy:
             ts.layout_fn = lambda x: True
             base64_img, img_map = self.processed_tree.render("%%return.PNG", tree_style=ts)
             image_tree = base64_img.data().decode("utf-8")
+            print(type(image_tree))
+
         except:
             sys.stderr.write("Error at image encoding.\n")
             sys.exit(1)
@@ -321,4 +327,17 @@ class FeatureStudy:
 
         return
 
+    
+    def logo_to_image(self):
+        image_logo_dictionary = {}
+        for node, logo in self.node_haplotype_logos.items():
+            tempfile = io.BytesIO()
+            logo.savefig(tempfile, format='png')
+            image_logo = base64.b64encode(tempfile.getvalue()).decode('utf-8')
+            image_logo_dictionary[node] = image_logo
+
+        return  image_logo_dictionary
+
+
+        
 ## END
