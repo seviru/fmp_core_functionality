@@ -20,13 +20,14 @@ class FeatureStudy:
                 node_score_algorithm, differentiate_gap_positions,
                 table_path=None, uniprot_path=None, 
                 annotation_features=None, min_evalue=None,
-                position_matrix=None):
+                position_matrix=None, compute_logos="N"):
         try:
             self.align_in = alignment_path
             self.tree_in = tree_path
             self.calc_alg = node_score_algorithm
             self.differentiate_gaps = differentiate_gap_positions
             self.position_matrix = position_matrix
+            self.compute_logos = compute_logos
             self.__setup_basic__
             if self.position_matrix == None:
                 self.min_eval = min_evalue
@@ -214,18 +215,19 @@ class FeatureStudy:
                     node.add_feature("node_haplotype", node_haplotype)
                     node_haplotypes[node_number] = node_haplotype
 
-                    node_haplotype_matrix = fp.haplotype_matrix_calculator(node_sequence_matrix)
-                    node.add_feature("node_haplotype_matrix", node_haplotype_matrix)
-                    node_haplotype_matrices[node_number] = node_haplotype_matrix
-                    if node_haplotype_matrix is not None:
-                        node_haplotype_logo = logomaker.Logo(node_haplotype_matrix,
-                                                             color_scheme="dmslogo_funcgroup",
-                                                             show_spines=False)
-                        node_haplotype_logo = node_haplotype_logo.fig
-                    else:
-                        node_haplotype_logo = None
-                    node.add_feature("node_haplotype_logo", node_haplotype_logo)
-                    node_haplotype_logos[node_number] = node_haplotype_logo    
+                    if self.compute_logos == "Y":
+                        node_haplotype_matrix = fp.haplotype_matrix_calculator(node_sequence_matrix)
+                        node.add_feature("node_haplotype_matrix", node_haplotype_matrix)
+                        node_haplotype_matrices[node_number] = node_haplotype_matrix
+                        if node_haplotype_matrix is not None:
+                            node_haplotype_logo = logomaker.Logo(node_haplotype_matrix,
+                                                                color_scheme="dmslogo_funcgroup",
+                                                                show_spines=False)
+                            node_haplotype_logo = node_haplotype_logo.fig
+                        else:
+                            node_haplotype_logo = None
+                        node.add_feature("node_haplotype_logo", node_haplotype_logo)
+                        node_haplotype_logos[node_number] = node_haplotype_logo    
 
                     node_number += 1
                     
@@ -282,7 +284,7 @@ class FeatureStudy:
         try:
             ts = TreeStyle()
             ts.layout_fn = lambda x: True
-            base64_img, img_map = self.processed_tree.render("%%return.PNG", tree_style=ts)
+            base64_img, img_map = self.processed_tree.render("%%return.PNG", units="px", dpi=500, tree_style=ts)
             image_tree = base64_img.data().decode("utf-8")
             print(type(image_tree))
 
